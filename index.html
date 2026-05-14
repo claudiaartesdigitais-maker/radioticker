@@ -1,1 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; padding: 0; background: transparent; font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; }
+        
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            background-color: #002366; /* Azul Royal Profundo */
+            height: 50px; /* Altura aumentada para caber a fonte maior */
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+        }
 
+        .ticker-label {
+            background: #0041C2; /* Azul Royal Vibrante */
+            color: white;
+            padding: 0 15px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            font-size: 12px; /* Aumentado levemente */
+            font-weight: 900;
+            z-index: 2;
+            white-space: nowrap;
+            letter-spacing: 1px;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .ticker-move {
+            display: flex;
+            white-space: nowrap;
+            will-change: transform;
+            animation: ticker linear infinite;
+        }
+
+        .ticker-item {
+            padding: 0 40px;
+            font-size: 18px; /* FONTE AUMENTADA AQUI */
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-weight: 600; /* Deixei um pouco mais negrito para ler melhor */
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="ticker-wrap">
+        <div class="ticker-label">GIRO DE NOTÍCIAS</div>
+        <div id="ticker-target" class="ticker-move">
+            <span class="ticker-item">A carregar notícias de última hora...</span>
+        </div>
+    </div>
+
+    <script>
+        async function carregarGiro() {
+            const rss_url = 'https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml';
+            const api_url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss_url)}`;
+            
+            try {
+                const response = await fetch(api_url);
+                const data = await response.json();
+                const container = document.getElementById('ticker-target');
+                
+                if(data.items && data.items.length > 0) {
+                    const html = data.items.map(item => `
+                        <a class="ticker-item" href="${item.link}" target="_blank"> 
+                            <span style="color: #FFD700; margin-right: 12px; font-size: 20px;">•</span> ${item.title.toUpperCase()}
+                        </a>
+                    `).join('');
+                    
+                    container.innerHTML = html;
+                    
+                    // Ajuste de velocidade para fonte maior:
+                    // Mais texto ou fonte maior precisa de um divisor menor para não ir muito rápido
+                    const tempo = (container.scrollWidth / 45); 
+                    container.style.animationDuration = tempo + 's';
+                }
+            } catch (e) {
+                console.error("Erro ao buscar RSS");
+            }
+        }
+        carregarGiro();
+    </script>
+</body>
+</html>
